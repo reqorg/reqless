@@ -1,0 +1,1 @@
+g++ core.cpp -o core && ./core github.com http
