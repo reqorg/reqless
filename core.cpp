@@ -6,43 +6,59 @@
 #include <string>
 #include <string.h>
 #include <iostream>
+#include <errno.h>
 
-int main(int argc , char *argv[])
-{
-    /* prepare socket() with args */
+using namespace std;
+
+int main(int argc , char *argv[]) {
     struct addrinfo hints,*res; 
 
-    memset(&hints , 0 , sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
 
-    hints.ai_family = AF_INET; hints.ai_socktype = SOCK_STREAM; 
-        hints.ai_flags = AI_PASSIVE;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM; 
+    hints.ai_flags = AI_PASSIVE;
+
+    const string domain = "info.cern.ch";
+    const string protocol = "http";
     
-    getaddrinfo(argv[1] , argv[2] , &hints, &res);
+    getaddrinfo(domain.c_str(), protocol.c_str(), &hints, &res);
+    int socketx = socket(AF_INET, SOCK_STREAM, 0);
 
-    int socketx = socket(res -> ai_family , 
-        res -> ai_socktype , res -> ai_protocol);
-    
-    /* connect and free res */
-    if(connect(socketx , res -> ai_addr, res -> ai_addrlen) == 0)
-        std::cout<<1<<"\n";
-    else  std::cout<<"error \n";
-    
+    int conn = connect(socketx , res -> ai_addr, res -> ai_addrlen);
+    if (conn == 0) cout << "Connection successful!" << endl;
+    else cout << "Error connecting to socket!\n";
 
-    freeaddrinfo(res); char read[4096];
+    freeaddrinfo(res);
 
-    std::string 
-        toSend = "GET / HTTP/1.1 \r\n Host : github.com \r\n",
-        websiteHTML;
+    string toSend = "GET / HTTP/1.1\nHost: " + domain + "\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36\nUpgrade-Insecure-Requests: 1\n";
+    cout << toSend << endl;
+    string websiteHTML;
+    send(socketx, toSend.c_str(), strlen(toSend.c_str()), 0);
 
-        if(send(socketx, toSend.c_str(), strlen(toSend.c_str()), 0) < 1) 
-            std::cout<<"connection closed";
+    void *read[4096];
 
-        while(recv(socketx, read , strlen(read) , 0) > 0){
-            int i = 0;
-                while(read[i]) websiteHTML += read[i++]; 
+    cout << "Sent request!" << endl;
+
+    int bytesReceived;
+    do {
+        bytesReceived = recv(socketx, read, 4096, 0);
+        if (bytesReceived > 0)
+            cout << "Bytes received: " << bytesReceived << endl;
+        else if (bytesReceived == 0)
+            cout << "Connection closed" << endl;
+        else {
+            cout << "Error while receiving" << endl;
+            fprintf(stderr, "recv: %s (%d)\n", strerror(errno), errno);
         }
+    } while (bytesReceived > 0);
 
-        std::cout<<websiteHTML;
+    cout << "RESPONSE" << endl;
+
+    char *array;
+    array = (char*)read;
+    cout << array << endl;
 
     close(socketx);
+    return 0;
 }
