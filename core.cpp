@@ -17,6 +17,9 @@ using namespace std;
 #include <openssl/pem.h>
 #include <openssl/err.h>
 
+//colored output
+#include "colors.h"
+
 namespace xSSL{
     struct context_socket{
         SSL *ssl_object; SSL_CTX* context;
@@ -49,6 +52,10 @@ namespace xSSL{
     }
 };
 
+void msg(std::string message , std::string color){
+    Color::CPRINT(color , message);
+}
+
 void prepare_hints(addrinfo &hints){
     memset(&hints, 0, sizeof(hints));
 
@@ -58,62 +65,68 @@ void prepare_hints(addrinfo &hints){
 
 int main() {
     struct addrinfo hints,*res; prepare_hints(hints);
-    const string domain = "www.google.com", protocol = "https";
+    const string domain = "github.com", protocol = "https";
     
     getaddrinfo(domain.c_str(), protocol.c_str(), &hints, &res);
         int socketx = socket(AF_INET, SOCK_STREAM, 0);
 
     if(connect(socketx , res -> ai_addr, res -> ai_addrlen) == 0) 
-        cout << "Connection successful!\n";
-    else cout << "Error connecting to socket!\n";
+        msg("Connection successful!\n", "green");
+    else msg("Error connecting to socket!\n" , "red");
 
-    //secure socket
-    xSSL::init();  
+    string toSend = "GET / HTTP/1.1\r\nHost:" + domain + "\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
+    cout << toSend << endl; 
+
+    void *read[4096]; int bytesReceived;
     
+    msg("Sent Request!\n", "green");
+
+    xSSL::init();  
+        
     xSSL::context_socket Builder  = xSSL::create_secure_socket();
 
     SSL* ssl_obj = Builder.ssl_object; SSL_CTX* ctx = Builder.context;
 
-    if(!SSL_set_tlsext_host_name(ssl_obj,(void *) domain.c_str()))
-        cout<<"cant get site's ceritficate";
-    
-    //set file descriptor
-    SSL_set_fd(ssl_obj,socketx); if(SSL_connect(ssl_obj) == -1){
-        cout<<"ssl connect failed";
+    //secure socket
+    if(protocol == "https"){
+
+        if(!SSL_set_tlsext_host_name(ssl_obj,(void *) domain.c_str()))
+            msg("cant get site's ceritficate!\n" , "red");
+        
+        //set file descriptor
+        SSL_set_fd(ssl_obj,socketx); if(SSL_connect(ssl_obj) == -1){
+            msg("ssl connect failed!\n" , "red");
+        }
+
+        SSL_write(ssl_obj, toSend.c_str(), strlen(toSend.c_str()));
+    }else{
+        send(socketx, toSend.c_str(), strlen(toSend.c_str()) , 0);
     }
 
-    freeaddrinfo(res);
 
-    string toSend = "GET / HTTP/1.1\r\nHost:" + domain + "\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
-    cout << toSend << endl; 
-    
-    SSL_write(ssl_obj, toSend.c_str(), strlen(toSend.c_str()));
-
-    void *read[4096];
-    
-    cout << "Sent request!" << endl;
-
-    int bytesReceived ;
-    
     do {
-        int bytesReceived = SSL_read(ssl_obj, read, 4096);
+        if(protocol == "https") int bytesReceived = SSL_read(ssl_obj, read, 4096);
+        else int bytesReceived = recv(socketx, read, 4096,0);
+
         if (bytesReceived > 0)
-            cout << "Bytes received: " << bytesReceived << endl;
-        else if (bytesReceived == 0){
+             cout << "Bytes received: " << bytesReceived << endl;
+         else if (bytesReceived == 0){
             cout << "Connection closed" << endl; 
         }
         else {
-            cout << "Error while receiving" << endl;
-            fprintf(stderr, "recv: %s (%d)\n", strerror(errno), errno);
+            msg("Error while receiving!\n" , "red");
+                fprintf(stderr, "recv: %s (%d)\n", strerror(errno), errno);
         }
     } while (bytesReceived > 0);
 
-    cout << "RESPONSE" << endl << (char*)read << endl;
+    if(protocol == "https"){
+        SSL_shutdown(ssl_obj); SSL_free(ssl_obj);
+            SSL_CTX_free(ctx);
+    }
 
 
-    SSL_shutdown(ssl_obj); SSL_free(ssl_obj);
-
-    SSL_CTX_free(ctx);
+    freeaddrinfo(res);
+        cout << "RESPONSE" << endl << (char*)read << endl;
 
     close(socketx);
 }
