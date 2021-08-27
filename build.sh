@@ -1,1 +1,1 @@
-g++ core.cpp -o core && ./core 
+g++ -lssl -lcrypto core.cpp -o core && ./core 
