@@ -63,9 +63,8 @@ void prepare_hints(addrinfo &hints){
     hints.ai_flags = AI_PASSIVE;
 }
 
-int main() {
+char * sendRequest(string domain, string path, string protocol, string method) {
     struct addrinfo hints,*res; prepare_hints(hints);
-    const string domain = "github.com", protocol = "https";
     
     getaddrinfo(domain.c_str(), protocol.c_str(), &hints, &res);
         int socketx = socket(AF_INET, SOCK_STREAM, 0);
@@ -74,7 +73,7 @@ int main() {
         msg("Connection successful!\n", "green");
     else msg("Error connecting to socket!\n" , "red");
 
-    string toSend = "GET / HTTP/1.1\r\nHost:" + domain + "\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
+    string toSend = method + " " + path + " HTTP/1.1\r\nHost:" + domain + "\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
     cout << toSend << endl; 
 
     void *read[4096]; int bytesReceived;
@@ -103,7 +102,6 @@ int main() {
         send(socketx, toSend.c_str(), strlen(toSend.c_str()) , 0);
     }
 
-
     do {
         if(protocol == "https") int bytesReceived = SSL_read(ssl_obj, read, 4096);
         else int bytesReceived = recv(socketx, read, 4096,0);
@@ -119,14 +117,21 @@ int main() {
         }
     } while (bytesReceived > 0);
 
-    if(protocol == "https"){
+    if (protocol == "https") {
         SSL_shutdown(ssl_obj); SSL_free(ssl_obj);
             SSL_CTX_free(ctx);
     }
 
-
     freeaddrinfo(res);
-        cout << "RESPONSE" << endl << (char*)read << endl;
-
     close(socketx);
+
+    char *response;
+    response = (char*)read;
+    return response;
+}
+
+int main() {
+    char *response = sendRequest("api.myip.com", "/", "https", "GET");
+    cout << "RESPONSE" << endl;
+    cout << response << endl;
 }
