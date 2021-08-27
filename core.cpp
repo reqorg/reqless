@@ -63,8 +63,19 @@ void prepare_hints(addrinfo &hints){
     hints.ai_flags = AI_PASSIVE;
 }
 
-char * sendRequest(string domain, string path, string protocol, string method) {
+char * sendRequest(string url, string method) {
     struct addrinfo hints,*res; prepare_hints(hints);
+
+    size_t start = url.find("://", 0);
+    start += 3; 
+    size_t end = url.find("/", start + 1);
+    string protocol = url.substr(0, start - 3);
+    string domain = url.substr(start, end - start);
+    string path = url.substr(end);
+
+    cout << protocol << endl;
+    cout << domain << endl;
+    cout << path << endl;
     
     getaddrinfo(domain.c_str(), protocol.c_str(), &hints, &res);
         int socketx = socket(AF_INET, SOCK_STREAM, 0);
@@ -131,7 +142,8 @@ char * sendRequest(string domain, string path, string protocol, string method) {
 }
 
 int main() {
-    char *response = sendRequest("api.myip.com", "/", "https", "GET");
+    string url = "https://api.myip.com/";
+    char *response = sendRequest(url, "GET");
     cout << "RESPONSE" << endl;
     cout << response << endl;
 }
