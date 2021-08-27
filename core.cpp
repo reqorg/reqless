@@ -14,12 +14,12 @@ void prepare_hints(addrinfo &hints){
     memset(&hints, 0, sizeof(hints));
 
     hints.ai_family = AF_INET; hints.ai_socktype = SOCK_STREAM; 
-        hints.ai_flags = AI_PASSIVE;
+    hints.ai_flags = AI_PASSIVE;
 }
 
 int main(int argc , char *argv[]) {
     struct addrinfo hints,*res; prepare_hints(hints);
-        const string domain = "info.cern.ch", protocol = "http";
+    const string domain = "info.cern.ch", protocol = "http";
     
     getaddrinfo(domain.c_str(), protocol.c_str(), &hints, &res);
     int socketx = socket(AF_INET, SOCK_STREAM, 0);
@@ -30,7 +30,7 @@ int main(int argc , char *argv[]) {
 
     freeaddrinfo(res);
 
-    string toSend = "GET / HTTP/1.1\n\rHost:" + domain + "\n\rUpgrade-Insecure-Requests: 0\n\r";
+    string toSend = "GET / HTTP/1.1\r\nHost:" + domain + "\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
     cout << toSend << endl; 
     
     send(socketx, toSend.c_str(), strlen(toSend.c_str()), 0);
