@@ -17,7 +17,7 @@ void prepare_hints(addrinfo &hints){
     hints.ai_flags = AI_PASSIVE;
 }
 
-int main(int argc , char *argv[]) {
+int main() {
     struct addrinfo hints,*res; prepare_hints(hints);
     const string domain = "info.cern.ch", protocol = "http";
     
