@@ -41,17 +41,19 @@ namespace Color
     #else
     std::string reset = "\033[0;39m\033[0m\n\n";
 
+    template <class T>
     void PREPSTREAMS
     (   
         std::stringstream &s, std::stringstream &b , std::stringstream &e,
-            int color_code , std::string print
+            int color_code , T print
     )
     {
         b << s.rdbuf() << ";" << color_code << "m" << print;
             e << s.rdbuf()  << "m"; b << e.rdbuf();
     }
 
-    void CPRINT(std::string color , std::string print)
+    template <class T>
+    void CPRINT(std::string color , T print)
     {
         int color_code;
 

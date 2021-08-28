@@ -68,7 +68,8 @@ namespace xSSL{
     }
 };
 
-void msg(std::string message , std::string color){
+template <class T>
+void msg(T message , std::string color){
     Color::CPRINT(color , message);
 }
 
@@ -93,7 +94,6 @@ char * sendRequest(string url, string method) {
     #if defined(_WIN32)    
         init_winsock();
     #endif
-
 
     struct addrinfo hints,*res; prepare_hints(hints);
 
