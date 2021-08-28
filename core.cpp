@@ -1,12 +1,29 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <string>
-#include <string.h>
-#include <iostream>
-#include <errno.h>
+#if defined(_WIN32)
+    #ifndef _WIN32_WINNT
+    #define _WIN32_WINNT 0x0600
+    #endif
+    #include <conio.h>
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #pragma comment(lib, "ws2_32.lib")
+#else
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <netdb.h>
+    #include <unistd.h>
+    #include <errno.h>
+#endif
+
+
+#if defined(_WIN32)
+    #define socket_error(s) ((s) != INVALID_SOCKET)
+    #define close_socket(s) closesocket(s)
+#else
+    #define socket_error(s) ((s) >= 0)
+    #define close_socket(s) close(s)
+#endif
 
 using namespace std;
 
@@ -45,8 +62,7 @@ namespace xSSL{
         SSL_CTX* ctx = create_context();
             SSL *ssl_obj = SSL_new(ctx);
         
-        Obj.context = ctx; 
-        Obj.ssl_object = ssl_obj;
+        Obj.context = ctx; Obj.ssl_object = ssl_obj;
 
         return Obj;
     }
@@ -60,7 +76,7 @@ void prepare_hints(addrinfo &hints){
     memset(&hints, 0, sizeof(hints));
 
     hints.ai_family = AF_INET; hints.ai_socktype = SOCK_STREAM; 
-    hints.ai_flags = AI_PASSIVE;
+        hints.ai_flags = AI_PASSIVE;
 }
 
 char * sendRequest(string url, string method) {
@@ -79,6 +95,10 @@ char * sendRequest(string url, string method) {
     
     getaddrinfo(domain.c_str(), protocol.c_str(), &hints, &res);
         int socketx = socket(AF_INET, SOCK_STREAM, 0);
+
+    if(!socket_error(socketx)){
+        msg("Error creating socket!\n" , "red");
+    }
 
     if(connect(socketx , res -> ai_addr, res -> ai_addrlen) == 0) 
         msg("Connection successful!\n", "green");
@@ -134,16 +154,34 @@ char * sendRequest(string url, string method) {
     }
 
     freeaddrinfo(res);
-    close(socketx);
+    close_socket(socketx);
 
     char *response;
     response = (char*)read;
     return response;
 }
 
+void init_winsock(){
+    #if defined(_WIN32)    
+        WSADATA d;    
+        if (WSAStartup(MAKEWORD(2, 2), &d)) {        
+            cout<<"Winsock failed to initialize";       
+        }
+    #endif
+}
+
 int main() {
+    //init windows
+    #if defined(_WIN32)    
+        init_winsock();
+    #endif
+
     string url = "https://api.myip.com/";
     char *response = sendRequest(url, "GET");
     cout << "RESPONSE" << endl;
     cout << response << endl;
+
+    #if defined(_WIN32)   
+        WSACleanup();
+    #endif
 }
