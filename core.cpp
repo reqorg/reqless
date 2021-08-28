@@ -159,12 +159,8 @@ char * sendRequest(string url, string method) {
         if (protocol == "https") bytesReceived = SSL_read(ssl_obj, read, 4096);
         else bytesReceived = recv(socketx, read, 4096, 0);
 
-        if (bytesReceived == SOCKET_ERROR) {
-            int err = WSAGetLastError();
-            cout << err << endl;
-        }
-        else if (bytesReceived > 0) {
-             cout << "Bytes received: " << bytesReceived << endl;
+        if (bytesReceived > 0) {
+            cout << "Bytes received: " << bytesReceived << endl;
         }
         else if (bytesReceived == 0) {
             cout << "Connection closed" << endl; 
