@@ -8,14 +8,37 @@
 
 namespace Color 
 {
-    std::unordered_map<std::string, int> ColorMap
+    std::unordered_map<std::string, int> ColorMapLinux
     ({
         {"red"     , 31},
         {"blue"    , 34},
         {"green"   , 32},
         {"original", 39}
     });
+    std::unordered_map<std::string, int> ColorMapWin
+    ({
+        {"red"     , 12},
+        {"blue"    , 9},
+        {"green"   , 10},
+        {"original", 14}
+    });
 
+    #if defined(_WIN32)
+    void CPRINT(std::string color , std::string print)
+    {
+        int color_code;
+
+        std::unordered_map<std::string,int>::iterator itr = ColorMapWin.find(color);
+
+        if(itr == ColorMapWin.end()) color_code = 14;
+        else color_code = itr->second;
+
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(hConsole, color_code);
+        cout << print << endl;
+        SetConsoleTextAttribute(hConsole, 7);
+    }
+    #else
     std::string reset = "\033[0;39m\033[0m\n\n";
 
     void PREPSTREAMS
@@ -32,9 +55,9 @@ namespace Color
     {
         int color_code;
 
-        std::unordered_map<std::string,int>::iterator itr = ColorMap.find(color);
+        std::unordered_map<std::string,int>::iterator itr = ColorMapLinux.find(color);
 
-        if(itr == ColorMap.end()) color_code = 39;
+        if(itr == ColorMapLinux.end()) color_code = 39;
             else color_code = itr->second;
 
         std::stringstream ss("\033[0") , begin , end; 
@@ -42,5 +65,5 @@ namespace Color
 
         std::cout << begin.rdbuf() << reset; 
     }
-
+    #endif
 }
