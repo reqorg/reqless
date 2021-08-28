@@ -17,7 +17,6 @@
     #include <cstring>
 #endif
 
-
 #if defined(_WIN32)
     #define socket_error(s) ((s) != INVALID_SOCKET)
     #define close_socket(s) closesocket(s)
@@ -77,10 +76,25 @@ void prepare_hints(addrinfo &hints){
     memset(&hints, 0, sizeof(hints));
 
     hints.ai_family = AF_INET; hints.ai_socktype = SOCK_STREAM; 
-        hints.ai_flags = AI_PASSIVE;
+    hints.ai_flags = AI_PASSIVE;
+}
+
+void init_winsock(){
+    #if defined(_WIN32)    
+        WSADATA d;    
+        if (WSAStartup(MAKEWORD(2, 2), &d)) {        
+            cout<<"Winsock failed to initialize";       
+        }
+    #endif
 }
 
 char * sendRequest(string url, string method) {
+    // Init windows
+    #if defined(_WIN32)    
+        init_winsock();
+    #endif
+
+
     struct addrinfo hints,*res; prepare_hints(hints);
 
     size_t start = url.find("://", 0);
@@ -105,9 +119,8 @@ char * sendRequest(string url, string method) {
         msg("Connection successful!\n", "green");
     else msg("Error connecting to socket!\n" , "red");
 
-    string toSend = method + " " + path + " HTTP/1.1\r\nHost:" + domain + "\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
+    string toSend = method + " " + path + " HTTP/1.1\r\nHost:" + domain + "\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
     cout << toSend << endl; 
-
     
     msg("Sent Request!\n", "green");
 
@@ -136,17 +149,22 @@ char * sendRequest(string url, string method) {
     int bytesReceived;
     #if defined(_WIN32)
         char read[4096];
+        shutdown(socketx, SD_SEND);
     #else
         void *read[4096];
     #endif
 
-    do {
-        if (protocol == "https") int bytesReceived = SSL_read(ssl_obj, read, 4096);
-        else int bytesReceived = recv(socketx, read, 4096, 0);
 
-        if (bytesReceived > 0) {
+    do {
+        if (protocol == "https") bytesReceived = SSL_read(ssl_obj, read, 4096);
+        else bytesReceived = recv(socketx, read, 4096, 0);
+
+        if (bytesReceived == SOCKET_ERROR) {
+            int err = WSAGetLastError();
+            cout << err << endl;
+        }
+        else if (bytesReceived > 0) {
              cout << "Bytes received: " << bytesReceived << endl;
-             cout << (char*)read << endl;
         }
         else if (bytesReceived == 0) {
             cout << "Connection closed" << endl; 
@@ -156,8 +174,6 @@ char * sendRequest(string url, string method) {
                 fprintf(stderr, "recv: %s (%d)\n", strerror(errno), errno);
         }
     } while (bytesReceived > 0);
-
-    cout << "Closed bytes received loop" << endl;
 
     if (protocol == "https") {
         SSL_shutdown(ssl_obj); SSL_free(ssl_obj);
@@ -169,30 +185,17 @@ char * sendRequest(string url, string method) {
 
     char *response;
     response = (char*)read;
-    return response;
-}
-
-void init_winsock(){
-    #if defined(_WIN32)    
-        WSADATA d;    
-        if (WSAStartup(MAKEWORD(2, 2), &d)) {        
-            cout<<"Winsock failed to initialize";       
-        }
-    #endif
-}
-
-int main() {
-    //init windows
-    #if defined(_WIN32)    
-        init_winsock();
-    #endif
-
-    string url = "https://api.myip.com/";
-    char *response = sendRequest(url, "GET");
-    cout << "RESPONSE" << endl;
-    cout << response << endl;
 
     #if defined(_WIN32)   
         WSACleanup();
     #endif
+
+    return response;
+}
+
+int main() {
+    string url = "http://info.cern.ch/";
+    char *response = sendRequest(url, "GET");
+    cout << "RESPONSE" << endl;
+    cout << response << endl;
 }
