@@ -148,15 +148,14 @@ string sendRequest(string url, string method) {
     }
 
     int bytesReceived;
-    int readIncrement = 400;
+    int readIncrement = 800;
+    string response;
     #if defined(_WIN32)
         char read[readIncrement];
         shutdown(socketx, SD_SEND);
     #else
-        void *read[readIncrement]
+        void *read[readIncrement];
     #endif
-
-    string response;
 
     do {
         if (protocol == "https") bytesReceived = SSL_read(ssl_obj, read, readIncrement);
@@ -167,10 +166,9 @@ string sendRequest(string url, string method) {
             response += tmpBuffer;
             memset(read, 0, sizeof(read));
         #else
-            char *tmpBuffChar = (char*)read
+            char *tmpBuffChar = (char*)read;
             string tmpBuffer(tmpBuffChar);
             response += tmpBuffer;
-            memset(read, 0, sizeof(read));
         #endif
 
         if (bytesReceived > 0) {
