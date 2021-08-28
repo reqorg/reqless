@@ -120,7 +120,7 @@ string sendRequest(string url, string method) {
         msg("Connection successful!\n", "green");
     else msg("Error connecting to socket!\n" , "red");
 
-    string toSend = method + " " + path + " HTTP/1.1\r\nHost:" + domain + "\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
+    string toSend = method + " " + path + " HTTP/1.1\r\nHost:" + domain + "\r\nConnection: close\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
     cout << toSend << endl; 
     
     msg("Sent Request!\n", "green");
@@ -148,7 +148,7 @@ string sendRequest(string url, string method) {
     }
 
     int bytesReceived;
-    int readIncrement = 800;
+    int readIncrement = 400;
     string response;
     #if defined(_WIN32)
         char read[readIncrement];
@@ -169,6 +169,7 @@ string sendRequest(string url, string method) {
             char *tmpBuffChar = (char*)read;
             string tmpBuffer(tmpBuffChar);
             response += tmpBuffer;
+            memset(read, 0, sizeof(read));
         #endif
 
         if (bytesReceived > 0) {
