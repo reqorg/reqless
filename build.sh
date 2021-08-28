@@ -1,6 +1,6 @@
 if [ "$1" == "" ]; then
-    if [[ "$OSTYPE" == "win32" ]]; then
-    g++ core.cpp -o core -lssl -lcrypto  -lws2_32 && ./core
+    if [ "$OSTYPE" == "win32" ] || [ "$OSTYPE" == "msys" ]; then
+        g++ core.cpp -o core.exe -I C:/OpenSSL/include -L C:/OpenSSL/lib -lssl -lcrypto -lws2_32 -lgdi32 && ./core.exe
     else 
         g++ core.cpp -o core -lssl -lcrypto && ./core
     fi

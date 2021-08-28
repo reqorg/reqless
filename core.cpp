@@ -88,8 +88,7 @@ void init_winsock(){
         }
     #endif
 }
-
-char * sendRequest(string url, string method) {
+string sendRequest(string url, string method) {
     // Init windows
     #if defined(_WIN32)    
         init_winsock();
@@ -150,28 +149,29 @@ char * sendRequest(string url, string method) {
 
     int bytesReceived;
     int readIncrement = 400;
-    int readSize = readIncrement;
     #if defined(_WIN32)
-        char *read = (char*)malloc(readSize*sizeof(char*));
+        char read[readIncrement];
         shutdown(socketx, SD_SEND);
     #else
-        void *read = malloc(readSize);
+        void *read[readIncrement]
     #endif
 
-    do {
-        if (protocol == "https") bytesReceived = SSL_read(ssl_obj, read, readSize);
-        else bytesReceived = recv(socketx, read, readSize, 0);
+    string response;
 
-        if (bytesReceived >= readIncrement) {
-            cout << "Adjusting read size" << endl;
-            readSize += readIncrement;
-            #if defined(_WIN32)
-                read = (char*)realloc(read, readSize*sizeof(char*));
-            #else
-                read = realloc(read, readSize);
-            #endif
-            cout << readSize << endl;
-        }
+    do {
+        if (protocol == "https") bytesReceived = SSL_read(ssl_obj, read, readIncrement);
+        else bytesReceived = recv(socketx, read, readIncrement, 0);
+
+        #if defined(_WIN32)
+            string tmpBuffer(read);
+            response += tmpBuffer;
+            memset(read, 0, sizeof(read));
+        #else
+            char *tmpBuffChar = (char*)read
+            string tmpBuffer(tmpBuffChar);
+            response += tmpBuffer;
+            memset(read, 0, sizeof(read));
+        #endif
 
         if (bytesReceived > 0) {
             cout << "Bytes received: " << bytesReceived << endl;
@@ -194,19 +194,15 @@ char * sendRequest(string url, string method) {
     close_socket(socketx);
 
     #if defined(_WIN32) 
-        char *response = read;  
         WSACleanup();
-    #else
-        char *response;
-        response = (char*)read;
     #endif
 
     return response;
 }
 
 int main() {
-    string url = "http://info.cern.ch/";
-    char *response = sendRequest(url, "GET");
+    string url = "https://www.google.com/";
+    string response = sendRequest(url, "GET");
     msg("RESPONSE\n", "green");
     cout << response << endl;
 }
