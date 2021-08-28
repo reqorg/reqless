@@ -105,10 +105,9 @@ char * sendRequest(string url, string method) {
         msg("Connection successful!\n", "green");
     else msg("Error connecting to socket!\n" , "red");
 
-    string toSend = method + " " + path + " HTTP/1.1\r\nHost:" + domain + "\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
+    string toSend = method + " " + path + " HTTP/1.1\r\nHost:" + domain + "\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
     cout << toSend << endl; 
 
-    void *read[4096]; int bytesReceived;
     
     msg("Sent Request!\n", "green");
 
@@ -134,13 +133,22 @@ char * sendRequest(string url, string method) {
         send(socketx, toSend.c_str(), strlen(toSend.c_str()) , 0);
     }
 
-    do {
-        if(protocol == "https") int bytesReceived = SSL_read(ssl_obj, read, 4096);
-        else int bytesReceived = recv(socketx, read, 4096,0);
+    int bytesReceived;
+    #if defined(_WIN32)
+        char read[4096];
+    #else
+        void *read[4096];
+    #endif
 
-        if (bytesReceived > 0)
+    do {
+        if (protocol == "https") int bytesReceived = SSL_read(ssl_obj, read, 4096);
+        else int bytesReceived = recv(socketx, read, 4096, 0);
+
+        if (bytesReceived > 0) {
              cout << "Bytes received: " << bytesReceived << endl;
-         else if (bytesReceived == 0){
+             cout << (char*)read << endl;
+        }
+        else if (bytesReceived == 0) {
             cout << "Connection closed" << endl; 
         }
         else {
@@ -148,6 +156,8 @@ char * sendRequest(string url, string method) {
                 fprintf(stderr, "recv: %s (%d)\n", strerror(errno), errno);
         }
     } while (bytesReceived > 0);
+
+    cout << "Closed bytes received loop" << endl;
 
     if (protocol == "https") {
         SSL_shutdown(ssl_obj); SSL_free(ssl_obj);
