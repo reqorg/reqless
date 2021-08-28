@@ -104,9 +104,11 @@ char * sendRequest(string url, string method) {
     string domain = url.substr(start, end - start);
     string path = url.substr(end);
 
+    /*
     cout << protocol << endl;
     cout << domain << endl;
     cout << path << endl;
+    */
     
     getaddrinfo(domain.c_str(), protocol.c_str(), &hints, &res);
         int socketx = socket(AF_INET, SOCK_STREAM, 0);
@@ -147,17 +149,29 @@ char * sendRequest(string url, string method) {
     }
 
     int bytesReceived;
+    int readIncrement = 400;
+    int readSize = readIncrement;
     #if defined(_WIN32)
-        char read[4096];
+        char *read = (char*)malloc(readSize*sizeof(char*));
         shutdown(socketx, SD_SEND);
     #else
-        void *read[4096];
+        void *read = malloc(readSize);
     #endif
 
-
     do {
-        if (protocol == "https") bytesReceived = SSL_read(ssl_obj, read, 4096);
-        else bytesReceived = recv(socketx, read, 4096, 0);
+        if (protocol == "https") bytesReceived = SSL_read(ssl_obj, read, readSize);
+        else bytesReceived = recv(socketx, read, readSize, 0);
+
+        if (bytesReceived >= readIncrement) {
+            cout << "Adjusting read size" << endl;
+            readSize += readIncrement;
+            #if defined(_WIN32)
+                read = (char*)realloc(read, readSize*sizeof(char*));
+            #else
+                read = realloc(read, readSize);
+            #endif
+            cout << readSize << endl;
+        }
 
         if (bytesReceived > 0) {
             cout << "Bytes received: " << bytesReceived << endl;
@@ -179,11 +193,12 @@ char * sendRequest(string url, string method) {
     freeaddrinfo(res);
     close_socket(socketx);
 
-    char *response;
-    response = (char*)read;
-
-    #if defined(_WIN32)   
+    #if defined(_WIN32) 
+        char *response = read;  
         WSACleanup();
+    #else
+        char *response;
+        response = (char*)read;
     #endif
 
     return response;
@@ -192,6 +207,6 @@ char * sendRequest(string url, string method) {
 int main() {
     string url = "http://info.cern.ch/";
     char *response = sendRequest(url, "GET");
-    cout << "RESPONSE" << endl;
+    msg("RESPONSE\n", "green");
     cout << response << endl;
 }
