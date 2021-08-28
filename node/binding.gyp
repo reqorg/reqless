@@ -3,7 +3,7 @@
     {
       "target_name": "hello",
       "cflags!": [ "-fno-exceptions" ],
-      "cflags_cc!": [ "-fno-exceptions" ],
+      "cflags_cc!": [ "-fno-exceptions", "-lssl", "-lcrypto" ],
       "sources": [ "hello.cc" ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"
