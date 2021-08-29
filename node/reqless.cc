@@ -20,8 +20,6 @@ Object sendMockRequest(const CallbackInfo& info) {
   
   string vd = body->second;
 
-  cout<<vd;
-  
   responseObj.Set("body", body->second);
   responseObj.Set("headers", headers->second);
   return responseObj;
