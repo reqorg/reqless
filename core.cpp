@@ -20,6 +20,32 @@ void init_winsock(){
         }
     #endif
 }
+
+namespace parse_url{
+    struct url_export{
+        string  protocol; 
+        string  domain  ; 
+        string  path    ;
+    };
+
+    parse_url::url_export core(string url){
+        parse_url::url_export Exporter;
+
+        size_t start = url.find("://", 0); start += 3; //"://"
+        size_t end = url.find("/", start + 1);
+
+        string  protocol = url.substr(0, start - 3)    , 
+                domain = url.substr(start, end - start), 
+                path = url.substr(end);
+        
+        Exporter.protocol = protocol; Exporter.domain = domain;
+            Exporter.path = path;
+
+        return Exporter;
+    }
+}
+
+
 unordered_map<string, string> sendRequest(string url, string method) {
 
     const bool logging = false;
@@ -31,12 +57,11 @@ unordered_map<string, string> sendRequest(string url, string method) {
     struct addrinfo hints,*res; prepare_hints(hints);
 
     //parse URI
-    size_t start = url.find("://", 0);
-    start += 3; //"://"
-    size_t end = url.find("/", start + 1);
-    string protocol = url.substr(0, start - 3);
-    string domain = url.substr(start, end - start);
-    string path = url.substr(end);
+    parse_url::url_export Parsed = parse_url::core(url);
+
+    string  domain = Parsed.domain    , 
+            protocol = Parsed.protocol,
+            path = Parsed.path        ;
     
     getaddrinfo(domain.c_str(), protocol.c_str(), &hints, &res);
         int socketx = socket(AF_INET, SOCK_STREAM, 0);
