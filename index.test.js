@@ -22,9 +22,7 @@ if (fs.existsSync(file)) rm_file();
 else if (fs.existsSync(dir)) rm_dir();
 
 
-const {execFileSync} = require("child_process");
-    execFileSync("./build.sh");
-
+const { execFileSync } = require("child_process");
 const reqless = require('./index');
 
 execFileSync('wget', ['http://info.cern.ch/']);
