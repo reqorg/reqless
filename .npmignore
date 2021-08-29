@@ -10,8 +10,7 @@ testr.js
 core/core
 core/core.exe
 core/build.sh
-build/Release
-build/.deps
+build/
 
 # Node
 node_modules/
