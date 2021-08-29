@@ -10,7 +10,12 @@ testr.js
 core/core
 core/core.exe
 core/build.sh
+build/Release
+build/.deps
 
 # Node
 node_modules/
 build.sh
+
+# VS Code
+.vscode/
