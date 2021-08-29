@@ -1,7 +1,7 @@
 #include <napi.h>
 #include <cstring>
-#include "./core.cpp"
-#include "./request.h"
+#include "./core/core.cpp"
+#include "./core/request.h"
 
 using namespace Napi;
 using namespace std;

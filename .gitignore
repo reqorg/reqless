@@ -3,9 +3,8 @@ libcrypto-1_1.dll
 libssl-1_1.dll
 
 # Build files
-build/
-core
-core.exe
+core/core
+core/ore.exe
 
 # Node
 node_modules/

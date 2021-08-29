@@ -15,8 +15,8 @@ template <class T>
 unordered_map<string, string> load_err(T err){
     unordered_map<string, string> response_err;
 
-        response_err["body"] = err;
-            response_err["headers"] = "error";
+    response_err["body"] = err;
+    response_err["headers"] = "error";
 
     return response_err;
 }
@@ -37,7 +37,6 @@ namespace win_sock{
             }
         #endif
     }
-
 }
 
 namespace parse_url{
@@ -185,6 +184,7 @@ unordered_map<string, string> sendRequest(string url, string method) {
     return responseObj;
 }
 
+/*
 int main() {
     string url = "http://info.cern.ch/";
     unordered_map<string, string> response = sendRequest(url, "GET");
@@ -197,3 +197,4 @@ int main() {
     msg("RESPONSE HEADERS\n", "green");
     cout << headers->second << endl;
 }
+*/
