@@ -16,8 +16,8 @@ unordered_map<std::string, std::string> load_err(T err)
 {
     unordered_map<std::string, std::string> response_err;
 
-        response_err["body"] = err;
-            response_err["headers"] = "error";
+    response_err["body"] = err;
+    response_err["headers"] = "error";
 
     return response_err;
 }
@@ -40,12 +40,6 @@ namespace win_sock
                 cout<<"Winsock failed to initialize";       
             }
         #endif
-    }
-
-    void close_winsock(){
-        #if defined(_WIN32) 
-            WSACleanup();
-         #endif
     }
 }
 
@@ -214,8 +208,8 @@ sendRequest(std::string url, std::string method)
     return responseObj;
 }
 
-int main() 
-{
+/*
+int main() {
     string url = "http://info.cern.ch/";
     unordered_map<string, string> response = sendRequest(url, "GET");
 
@@ -227,3 +221,4 @@ int main()
     msg("RESPONSE HEADERS\n", "green");
     cout << headers->second << endl;
 }
+*/
