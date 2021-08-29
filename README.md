@@ -5,6 +5,8 @@ A Node.js HTTP client written in C++, with focus on performance, reliability and
 
 Using npm:
 
+https://www.npmjs.com/package/reqless
+
 ```bash
 $ npm install reqless
 ```
