@@ -12,8 +12,9 @@ void msg(T message , std::string color){
 }
 
 template <class T>
-unordered_map<string, string> load_err(T err){
-    unordered_map<string, string> response_err;
+unordered_map<std::string, std::string> load_err(T err)
+{
+    unordered_map<std::string, std::string> response_err;
 
         response_err["body"] = err;
             response_err["headers"] = "error";
@@ -21,15 +22,18 @@ unordered_map<string, string> load_err(T err){
     return response_err;
 }
 
-void prepare_hints(addrinfo &hints){
+void prepare_hints(addrinfo &hints)
+{
     memset(&hints, 0, sizeof(hints));
 
     hints.ai_family = AF_INET; hints.ai_socktype = SOCK_STREAM; 
     hints.ai_flags = AI_PASSIVE;
 }
 
-namespace win_sock{
-    void init_winsock(){
+namespace win_sock
+{
+    void init_winsock()
+    {
         #if defined(_WIN32)    
             WSADATA d;    
             if (WSAStartup(MAKEWORD(2, 2), &d)) {        
@@ -38,22 +42,30 @@ namespace win_sock{
         #endif
     }
 
+    void close_winsock(){
+        #if defined(_WIN32) 
+            WSACleanup();
+         #endif
+    }
 }
 
-namespace parse_url{
-    struct url_export{
+namespace parse_url
+{
+    struct url_export
+    {
         string  protocol; 
         string  domain  ; 
         string  path    ;
     };
 
-    parse_url::url_export core(string url){
+    parse_url::url_export core(std::string url)
+    {
         parse_url::url_export Exporter;
 
         size_t start = url.find("://", 0); start += 3; //"://"
         size_t end = url.find("/", start + 1);
 
-        string  protocol = url.substr(0, start - 3)    , 
+        std::string  protocol = url.substr(0, start - 3)    , 
                 domain = url.substr(start, end - start), 
                 path = url.substr(end);
         
@@ -62,11 +74,20 @@ namespace parse_url{
 
         return Exporter;
     }
+
+    std::string to_send(std::string method , std::string path , std::string domain)
+    {
+        std::string build_string = method + " " + path + " HTTP/1.1\r\nHost:" + domain + 
+                    "\r\nConnection: close\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
+
+        return build_string;
+    }
 }
 
 
-
-unordered_map<string, string> sendRequest(string url, string method) {
+unordered_map<std::string, std::string>
+sendRequest(std::string url, std::string method) 
+{
     const bool logging = false; string error = "";
 
     // Init windows
@@ -86,20 +107,24 @@ unordered_map<string, string> sendRequest(string url, string method) {
     getaddrinfo(domain.c_str(), protocol.c_str(), &hints, &res);
         int socketx = socket(AF_INET, SOCK_STREAM, 0);
 
-    if(!socket_error(socketx)){
+    if(!socket_error(socketx))
+    {
         msg("Error creating socket!\n" , "red");
             return load_err(get_last_err());
     }
 
-    if(connect(socketx , res -> ai_addr, res -> ai_addrlen) == 0){
+    if(connect(socketx , res -> ai_addr, res -> ai_addrlen) == 0)
+    {
         if (logging) msg("Connection successful!\n", "green");
-    } else{
+    }
+    else
+    {
         msg("Error connecting to socket!\n" , "red");
             return load_err(get_last_err());
     }
 
-    string toSend = method + " " + path + " HTTP/1.1\r\nHost:" + domain + "\r\nConnection: close\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
-    if (logging) cout << toSend << endl; 
+    string toSend = parse_url::to_send(method ,path, domain);
+    //if (logging) cout << toSend << endl; 
     
     if (logging) msg("Sent Request!\n", "green");
 
@@ -148,19 +173,23 @@ unordered_map<string, string> sendRequest(string url, string method) {
             memset(read, 0, sizeof(read));
         #endif
 
-        if (bytesReceived > 0) {
+        if (bytesReceived > 0) 
+        {
             if (logging) cout << "Bytes received: " << bytesReceived << endl;
         }
-        else if (bytesReceived == 0) {
+        else if (bytesReceived == 0) 
+        {
             if (logging) cout << "Connection closed" << endl; 
         }
-        else {
+        else 
+        {
             msg("Error while receiving!\n" , "red");
                 fprintf(stderr, "recv: %s (%d)\n", strerror(errno), errno);
         }
     } while (bytesReceived > 0);
 
-    if (protocol == "https") {
+    if (protocol == "https") 
+    {
         SSL_shutdown(ssl_obj); SSL_free(ssl_obj);
             SSL_CTX_free(ctx);
     }
@@ -169,7 +198,7 @@ unordered_map<string, string> sendRequest(string url, string method) {
     close_socket(socketx);
 
     #if defined(_WIN32) 
-        WSACleanup();
+        win_sock::close_winsock();
     #endif
 
     unordered_map<string, string> responseObj;
@@ -185,7 +214,8 @@ unordered_map<string, string> sendRequest(string url, string method) {
     return responseObj;
 }
 
-int main() {
+int main() 
+{
     string url = "http://info.cern.ch/";
     unordered_map<string, string> response = sendRequest(url, "GET");
 
