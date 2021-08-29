@@ -21,6 +21,8 @@ void init_winsock(){
     #endif
 }
 string sendRequest(string url, string method) {
+
+    const bool logging = false;
     // Init windows
     #if defined(_WIN32)    
         init_winsock();
@@ -29,19 +31,12 @@ string sendRequest(string url, string method) {
     struct addrinfo hints,*res; prepare_hints(hints);
 
     //parse URI
-    cout << url << endl;
     size_t start = url.find("://", 0);
     start += 3; //"://"
     size_t end = url.find("/", start + 1);
     string protocol = url.substr(0, start - 3);
     string domain = url.substr(start, end - start);
     string path = url.substr(end);
-
-    /*
-    cout << protocol << endl;
-    cout << domain << endl;
-    cout << path << endl;
-    */
     
     getaddrinfo(domain.c_str(), protocol.c_str(), &hints, &res);
         int socketx = socket(AF_INET, SOCK_STREAM, 0);
@@ -50,30 +45,28 @@ string sendRequest(string url, string method) {
         msg("Error creating socket!\n" , "red");
     }
 
-    if(connect(socketx , res -> ai_addr, res -> ai_addrlen) == 0) 
-        msg("Connection successful!\n", "green");
-    else msg("Error connecting to socket!\n" , "red");
+    if(connect(socketx , res -> ai_addr, res -> ai_addrlen) == 0){
+        if (logging) msg("Connection successful!\n", "green");
+    } else msg("Error connecting to socket!\n" , "red");
 
     string toSend = method + " " + path + " HTTP/1.1\r\nHost:" + domain + "\r\nConnection: close\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
-    cout << toSend << endl; 
+    if (logging) cout << toSend << endl; 
     
-    msg("Sent Request!\n", "green");
+    if (logging) msg("Sent Request!\n", "green");
 
     xSSL::init();  
-        
     xSSL::context_socket Builder  = xSSL::create_secure_socket();
-
     SSL* ssl_obj = Builder.ssl_object; SSL_CTX* ctx = Builder.context;
 
     //secure socket
     if(protocol == "https"){
 
         if(!SSL_set_tlsext_host_name(ssl_obj,(void *) domain.c_str()))
-            msg("cant get site's ceritficate!\n" , "red");
+            msg("Cant get site's certificate!\n" , "red");
         
         //set file descriptor
         SSL_set_fd(ssl_obj,socketx); if(SSL_connect(ssl_obj) == -1){
-            msg("ssl connect failed!\n" , "red");
+            msg("SSL connect failed!\n" , "red");
         }
 
         SSL_write(ssl_obj, toSend.c_str(), strlen(toSend.c_str()));
@@ -107,10 +100,10 @@ string sendRequest(string url, string method) {
         #endif
 
         if (bytesReceived > 0) {
-            cout << "Bytes received: " << bytesReceived << endl;
+            if (logging) cout << "Bytes received: " << bytesReceived << endl;
         }
         else if (bytesReceived == 0) {
-            cout << "Connection closed" << endl; 
+            if (logging) cout << "Connection closed" << endl; 
         }
         else {
             msg("Error while receiving!\n" , "red");
