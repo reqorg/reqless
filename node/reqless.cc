@@ -6,13 +6,20 @@
 using namespace Napi;
 using namespace std;
 
-String sendMockRequest(const CallbackInfo& info) {
+Object sendMockRequest(const CallbackInfo& info) {
   Env env = info.Env();
+
   string domain = info[0].As<Napi::String>();
   string method = info[1].As<Napi::String>();
-  string response = sendRequest(domain, method);
-  String re = String::New(env, response.c_str()); 
-  return re;
+  unordered_map<string, string> response = sendRequest(domain, method);
+
+  Object responseObj = Object::New(env);
+
+  unordered_map<string, string>::const_iterator body = response.find("body");
+  unordered_map<string, string>::const_iterator headers = response.find("headers");
+  responseObj.Set("body", body->second);
+  responseObj.Set("headers", headers->second);
+  return responseObj;
 }
 
 Object Init(Env env, Object exports) {

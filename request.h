@@ -37,6 +37,8 @@ using namespace std;
 #include <openssl/pem.h>
 #include <openssl/err.h>
 
+#include <unordered_map>
+
 //colored output
 #include "colors.h"
 
@@ -71,7 +73,6 @@ namespace xSSL{
     }
 };
 
-string sendRequest(string url, string method);
-string testFunc();
+unordered_map<string, string> sendRequest(string url, string method);
 
 #endif

@@ -20,7 +20,7 @@ void init_winsock(){
         }
     #endif
 }
-string sendRequest(string url, string method) {
+unordered_map<string, string> sendRequest(string url, string method) {
 
     const bool logging = false;
     // Init windows
@@ -122,17 +122,28 @@ string sendRequest(string url, string method) {
         WSACleanup();
     #endif
 
-    return response;
-}
+    unordered_map<string, string> responseObj;
 
-string testFunc() {
-    string response = "abc123";
-    return response;
+    string headers = response.substr(0, response.find("\n\r")); // token is "scott"
+    headers = headers.erase(0, headers.find("\n") + 1);
+
+    string body = response.substr(response.find("\n\r") + 1); 
+
+    responseObj["body"] = body;
+    responseObj["headers"] = headers;
+
+    return responseObj;
 }
 
 int main() {
     string url = "http://info.cern.ch/";
-    string response = sendRequest(url, "GET");
-    msg("RESPONSE\n", "green");
-    cout << response << endl;
+    unordered_map<string, string> response = sendRequest(url, "GET");
+
+    unordered_map<string, string>::const_iterator body = response.find("body");
+    msg("RESPONSE BODY\n", "green");
+    cout << body->second << endl;
+    
+    unordered_map<string, string>::const_iterator headers = response.find("headers");
+    msg("RESPONSE HEADERS\n", "green");
+    cout << headers->second << endl;
 }
