@@ -1,7 +1,7 @@
 const reqless = require("./index")
 
 const response = reqless({ 
-    url: "http://info.cern.ch/",
+    url: "https://example.com/",
     method: "GET"
 })
 console.log(response.body)

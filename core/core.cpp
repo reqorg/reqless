@@ -211,7 +211,7 @@ sendRequest(std::string url, std::string method)
 
 /*
 int main() {
-    string url = "http://info.cern.ch/";
+    string url = "https://www.google.com/";
     unordered_map<string, string> response = sendRequest(url, "GET");
 
     unordered_map<string, string>::const_iterator body = response.find("body");
