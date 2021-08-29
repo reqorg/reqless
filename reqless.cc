@@ -10,12 +10,22 @@ Object sendRequestMiddleman(const CallbackInfo& info) {
   Env env = info.Env();
 
   Object request = info[0].As<Object>();
+  string method, domain, data;
 
-  string domain = request.Get("url").As<String>();
-  string method = request.Get("method").As<String>();
-  if (method.empty()) method = "GET";
+  // Attribute reading
+  domain = request.Get("url").As<String>();
+  if (request.Has("method")) {
+    method = request.Get("method").As<String>();
+  } else {
+    method = "GET";
+  }
+  if (request.Has("data")) {
+    data = request.Get("data").As<String>();
+  } else {
+    data = "";
+  }
 
-  unordered_map<string, string> response = sendRequest(domain, method);
+  unordered_map<string, string> response = sendRequest(domain, method, data);
 
   Object responseObj = Object::New(env);
 
