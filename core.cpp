@@ -75,26 +75,25 @@ unordered_map<string, string> sendRequest(string url, string method) {
     }
 
     int bytesReceived;
-    int readIncrement = 400;
+    int readIncrement = 1024;
     string response;
     #if defined(_WIN32)
         char read[readIncrement];
         shutdown(socketx, SD_SEND);
     #else
-        char read[readIncrement];
+        char read[1024];
     #endif
 
     do {
         if (protocol == "https") bytesReceived = SSL_read(ssl_obj, read, readIncrement);
-        else bytesReceived = recv(socketx, read, readIncrement, 0);
+        else bytesReceived = recv(socketx, read, 1024, 0);
         #if defined(_WIN32)
             string tmpBuffer(read);
             response += tmpBuffer;
             memset(read, 0, sizeof(read));
         #else
-            char *tmpBuffChar = (char*)read;
-            string tmpBuffer(tmpBuffChar);
-            response += tmpBuffer;
+            string tmpBuffer((char *)read);
+                response += tmpBuffer;
             memset(read, 0, sizeof(read));
         #endif
 

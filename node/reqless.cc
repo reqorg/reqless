@@ -17,6 +17,11 @@ Object sendMockRequest(const CallbackInfo& info) {
 
   unordered_map<string, string>::const_iterator body = response.find("body");
   unordered_map<string, string>::const_iterator headers = response.find("headers");
+  
+  string vd = body->second;
+
+  cout<<vd;
+  
   responseObj.Set("body", body->second);
   responseObj.Set("headers", headers->second);
   return responseObj;
