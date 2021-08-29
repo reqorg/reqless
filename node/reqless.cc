@@ -11,7 +11,7 @@ String sendMockRequest(const CallbackInfo& info) {
   string domain = info[0].As<Napi::String>();
   string method = info[1].As<Napi::String>();
   string response = sendRequest(domain, method);
-  String re = String::New(env, response); 
+  String re = String::New(env, response.c_str()); 
   return re;
 }
 

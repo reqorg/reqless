@@ -81,13 +81,12 @@ string sendRequest(string url, string method) {
         char read[readIncrement];
         shutdown(socketx, SD_SEND);
     #else
-        void *read[readIncrement];
+        char read[readIncrement];
     #endif
 
     do {
         if (protocol == "https") bytesReceived = SSL_read(ssl_obj, read, readIncrement);
         else bytesReceived = recv(socketx, read, readIncrement, 0);
-
         #if defined(_WIN32)
             string tmpBuffer(read);
             response += tmpBuffer;
@@ -132,7 +131,7 @@ string testFunc() {
 }
 
 int main() {
-    string url = "https://www.google.com/";
+    string url = "http://info.cern.ch/";
     string response = sendRequest(url, "GET");
     msg("RESPONSE\n", "green");
     cout << response << endl;
