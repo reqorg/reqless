@@ -1,10 +1,10 @@
 {
   "targets": [
     {
-      "target_name": "hello",
+      "target_name": "reqless",
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions", "-lssl", "-lcrypto" ],
-      "sources": [ "hello.cc" ],
+      "sources": [ "reqless.cc" ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"
       ],

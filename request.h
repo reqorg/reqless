@@ -72,5 +72,6 @@ namespace xSSL{
 };
 
 string sendRequest(string url, string method);
+string testFunc();
 
 #endif

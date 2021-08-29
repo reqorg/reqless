@@ -1,6 +1,6 @@
 #include <napi.h>
-#include <string>
-#include <string.h>
+#include <cstring>
+#include "../core.cpp"
 #include "../request.h"
 
 using namespace Napi;
@@ -11,7 +11,7 @@ String sendMockRequest(const CallbackInfo& info) {
   string domain = info[0].As<Napi::String>();
   string method = info[1].As<Napi::String>();
   string response = sendRequest(domain, method);
-  String re = String::New(env, "aaa"); 
+  String re = String::New(env, response); 
   return re;
 }
 

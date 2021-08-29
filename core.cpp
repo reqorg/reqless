@@ -1,5 +1,4 @@
 #include "request.h"
-#include "colors.h"
 
 template <class T>
 void msg(T message , std::string color){
@@ -29,8 +28,10 @@ string sendRequest(string url, string method) {
 
     struct addrinfo hints,*res; prepare_hints(hints);
 
+    //parse URI
+    cout << url << endl;
     size_t start = url.find("://", 0);
-    start += 3; 
+    start += 3; //"://"
     size_t end = url.find("/", start + 1);
     string protocol = url.substr(0, start - 3);
     string domain = url.substr(start, end - start);
@@ -129,6 +130,11 @@ string sendRequest(string url, string method) {
         WSACleanup();
     #endif
 
+    return response;
+}
+
+string testFunc() {
+    string response = "abc123";
     return response;
 }
 
