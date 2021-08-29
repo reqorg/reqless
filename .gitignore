@@ -3,6 +3,7 @@ libcrypto-1_1.dll
 libssl-1_1.dll
 
 # Build files
+build/
 core/core
 core/core.exe
 
