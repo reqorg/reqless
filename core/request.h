@@ -73,6 +73,6 @@ namespace xSSL{
     }
 };
 
-unordered_map<string, string> sendRequest(string url, string method);
+unordered_map<string, string> sendRequest(string url, string method, string data);
 
 #endif

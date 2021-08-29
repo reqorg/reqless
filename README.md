@@ -23,7 +23,13 @@ console.log(response.body, response.headers);
 ```
 
 ## Response
-The `req` function returns a `response` object.
+The main reqless function returns a `response` object.
 A response object has the following attributes:
-  - body: The body received from the HTTP request.
-  - headers: The headers received from the HTTP request.
+  - body: The body received from the HTTP request (string).
+  - headers: The headers received from the HTTP request (string).
+
+## Request
+Inside the request object you can provide the following attributes:
+  - url: The url which will be requested (string).
+  - method: The method in which the url will be requested, default - GET (string).
+  - data: POST data for the request (string).

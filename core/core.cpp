@@ -69,18 +69,22 @@ namespace parse_url
         return Exporter;
     }
 
-    std::string to_send(std::string method , std::string path , std::string domain)
+    std::string to_send(std::string method , std::string path , std::string domain, std::string data)
     {
-        std::string build_string = method + " " + path + " HTTP/1.1\r\nHost:" + domain + 
-                    "\r\nConnection: close\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
-
+        std::string build_string = method + " " + path + " HTTP/1.1\r\nHost: " + domain + 
+        "\r\nConnection: close\r\nUpgrade-Insecure-Requests: 0\r\n";
+        if (data.empty() || method != "POST") {
+            build_string += "\r\n";
+        } else {
+            build_string += "Content-Length: " + std::to_string(data.length()) + "\r\n\r\n" + data + "\r\n";
+        }
         return build_string;
     }
 }
 
 
 unordered_map<std::string, std::string>
-sendRequest(std::string url, std::string method) 
+sendRequest(std::string url, std::string method, std::string data) 
 {
     const bool logging = false; string error = "";
 
@@ -117,7 +121,7 @@ sendRequest(std::string url, std::string method)
             return load_err(get_last_err());
     }
 
-    string toSend = parse_url::to_send(method ,path, domain);
+    string toSend = parse_url::to_send(method, path, domain, data);
     //if (logging) cout << toSend << endl; 
     
     if (logging) msg("Sent Request!\n", "green");
@@ -209,10 +213,9 @@ sendRequest(std::string url, std::string method)
     return responseObj;
 }
 
-/*
 int main() {
-    string url = "https://www.google.com/";
-    unordered_map<string, string> response = sendRequest(url, "GET");
+    string url = "http://httpbin.org/post";
+    unordered_map<string, string> response = sendRequest(url, "POST", "hello=aaa");
 
     unordered_map<string, string>::const_iterator body = response.find("body");
     msg("RESPONSE BODY\n", "green");
@@ -222,4 +225,3 @@ int main() {
     msg("RESPONSE HEADERS\n", "green");
     cout << headers->second << endl;
 }
-*/
