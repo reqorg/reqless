@@ -1,8 +1,24 @@
 #include "request.h"
 
+#if defined(_WIN32)
+    #define get_last_err() (WSAGetLastError())
+#else
+    #define get_last_err() (errno)
+#endif
+
 template <class T>
 void msg(T message , std::string color){
     Color::CPRINT(color , message);
+}
+
+template <class T>
+unordered_map<string, string> load_err(T err){
+    unordered_map<string, string> response_err;
+
+        response_err["body"] = err;
+            response_err["headers"] = "error";
+
+    return response_err;
 }
 
 void prepare_hints(addrinfo &hints){
@@ -12,13 +28,16 @@ void prepare_hints(addrinfo &hints){
     hints.ai_flags = AI_PASSIVE;
 }
 
-void init_winsock(){
-    #if defined(_WIN32)    
-        WSADATA d;    
-        if (WSAStartup(MAKEWORD(2, 2), &d)) {        
-            cout<<"Winsock failed to initialize";       
-        }
-    #endif
+namespace win_sock{
+    void init_winsock(){
+        #if defined(_WIN32)    
+            WSADATA d;    
+            if (WSAStartup(MAKEWORD(2, 2), &d)) {        
+                cout<<"Winsock failed to initialize";       
+            }
+        #endif
+    }
+
 }
 
 namespace parse_url{
@@ -46,12 +65,13 @@ namespace parse_url{
 }
 
 
-unordered_map<string, string> sendRequest(string url, string method) {
 
-    const bool logging = false;
+unordered_map<string, string> sendRequest(string url, string method) {
+    const bool logging = false; string error = "";
+
     // Init windows
     #if defined(_WIN32)    
-        init_winsock();
+        win_sock::init_winsock();
     #endif
 
     struct addrinfo hints,*res; prepare_hints(hints);
@@ -68,11 +88,15 @@ unordered_map<string, string> sendRequest(string url, string method) {
 
     if(!socket_error(socketx)){
         msg("Error creating socket!\n" , "red");
+            return load_err(get_last_err());
     }
 
     if(connect(socketx , res -> ai_addr, res -> ai_addrlen) == 0){
         if (logging) msg("Connection successful!\n", "green");
-    } else msg("Error connecting to socket!\n" , "red");
+    } else{
+        msg("Error connecting to socket!\n" , "red");
+            return load_err(get_last_err());
+    }
 
     string toSend = method + " " + path + " HTTP/1.1\r\nHost:" + domain + "\r\nConnection: close\r\nUpgrade-Insecure-Requests: 0\r\n\r\n";
     if (logging) cout << toSend << endl; 
@@ -92,6 +116,7 @@ unordered_map<string, string> sendRequest(string url, string method) {
         //set file descriptor
         SSL_set_fd(ssl_obj,socketx); if(SSL_connect(ssl_obj) == -1){
             msg("SSL connect failed!\n" , "red");
+                return load_err(get_last_err());
         }
 
         SSL_write(ssl_obj, toSend.c_str(), strlen(toSend.c_str()));
@@ -99,12 +124,12 @@ unordered_map<string, string> sendRequest(string url, string method) {
         send(socketx, toSend.c_str(), strlen(toSend.c_str()) , 0);
     }
 
-    int bytesReceived;
-    int readIncrement = 1024;
+    int bytesReceived,  readIncrement = 1024;
     string response;
+
     #if defined(_WIN32)
         char read[readIncrement];
-        shutdown(socketx, SD_SEND);
+            shutdown(socketx, SD_SEND);
     #else
         char read[readIncrement];
     #endif
@@ -161,7 +186,7 @@ unordered_map<string, string> sendRequest(string url, string method) {
 }
 
 int main() {
-    string url = "https://www.google.com/";
+    string url = "http://info.cern.ch/";
     unordered_map<string, string> response = sendRequest(url, "GET");
 
     unordered_map<string, string>::const_iterator body = response.find("body");
