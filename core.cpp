@@ -81,19 +81,19 @@ unordered_map<string, string> sendRequest(string url, string method) {
         char read[readIncrement];
         shutdown(socketx, SD_SEND);
     #else
-        char read[1024];
+        char read[readIncrement];
     #endif
 
     do {
         if (protocol == "https") bytesReceived = SSL_read(ssl_obj, read, readIncrement);
-        else bytesReceived = recv(socketx, read, 1024, 0);
+        else bytesReceived = recv(socketx, read, readIncrement, 0);
         #if defined(_WIN32)
             string tmpBuffer(read);
             response += tmpBuffer;
             memset(read, 0, sizeof(read));
         #else
             string tmpBuffer((char *)read);
-                response += tmpBuffer;
+            response += tmpBuffer;
             memset(read, 0, sizeof(read));
         #endif
 
@@ -135,7 +135,7 @@ unordered_map<string, string> sendRequest(string url, string method) {
 }
 
 int main() {
-    string url = "http://info.cern.ch/";
+    string url = "https://www.google.com/";
     unordered_map<string, string> response = sendRequest(url, "GET");
 
     unordered_map<string, string>::const_iterator body = response.find("body");
