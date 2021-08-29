@@ -4,7 +4,7 @@ libssl-1_1.dll
 
 # Build files
 core/core
-core/ore.exe
+core/core.exe
 
 # Node
 node_modules/
