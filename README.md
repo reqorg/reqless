@@ -1,5 +1,5 @@
 # reqless
-A Node.js HTTP client written in C++, having in mind performance and size!
+A Node.js HTTP client written in C++, with focus on performance, reliability and safety.
 
 ## Installation
 
@@ -14,7 +14,7 @@ $ npm install reqless
 const reqless = require("reqless")
 
 const response = reqless.req("https://example.com/", "GET");
-console.log(response.body , response.headers);
+console.log(response.body, response.headers);
 ```
 
 ## Response
