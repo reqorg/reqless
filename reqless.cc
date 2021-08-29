@@ -9,7 +9,7 @@ using namespace std;
 Object sendRequestMiddleman(const CallbackInfo& info) {
   Env env = info.Env();
 
-  Object request = info.As<Object>();
+  Object request = info[0].As<Object>();
 
   string domain = request.Get("url").As<String>();
   string method = request.Get("method").As<String>();

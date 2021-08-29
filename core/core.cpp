@@ -201,6 +201,7 @@ sendRequest(std::string url, std::string method)
     headers = headers.erase(0, headers.find("\n") + 1);
 
     string body = response.substr(response.find("\n\r") + 1); 
+    body = body.erase(0, body.find("\n") + 1);
 
     responseObj["body"] = body;
     responseObj["headers"] = headers;
