@@ -1,0 +1,15 @@
+# Windows OpenSSL dependencies
+libcrypto-1_1.dll
+libssl-1_1.dll
+
+# Test server
+server/
+
+# Build files
+core/core
+core/core.exe
+core/build.sh
+
+# Node
+node_modules/
+build.sh
