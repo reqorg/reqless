@@ -1,1 +1,1 @@
-node-gyp configure && node-gyp build
+node-gyp configure && node-gyp build && node testr.js

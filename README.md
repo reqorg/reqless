@@ -13,7 +13,10 @@ $ npm install reqless
 ```js
 const reqless = require("reqless")
 
-const response = reqless.req("https://example.com/", "GET");
+const response = reqless({ 
+    url: "http://info.cern.ch/",
+    method: "GET"
+})
 console.log(response.body, response.headers);
 ```
 

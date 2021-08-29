@@ -6,11 +6,15 @@
 using namespace Napi;
 using namespace std;
 
-Object sendMockRequest(const CallbackInfo& info) {
+Object sendRequestMiddleman(const CallbackInfo& info) {
   Env env = info.Env();
 
-  string domain = info[0].As<Napi::String>();
-  string method = info[1].As<Napi::String>();
+  Object request = info[0].As<Object>();
+
+  string domain = request.Get("url").As<String>();
+  string method = request.Get("method").As<String>();
+  if (method.empty()) method = "GET";
+
   unordered_map<string, string> response = sendRequest(domain, method);
 
   Object responseObj = Object::New(env);
@@ -26,8 +30,7 @@ Object sendMockRequest(const CallbackInfo& info) {
 }
 
 Object Init(Env env, Object exports) {
-  exports.Set(String::New(env, "req"), Function::New(env, sendMockRequest));
-  return exports;
+    return Napi::Function::New(env, sendRequestMiddleman);
 }
 
-NODE_API_MODULE(hello, Init)
+NODE_API_MODULE(reqless, Init)

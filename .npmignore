@@ -2,14 +2,19 @@
 libcrypto-1_1.dll
 libssl-1_1.dll
 
-# Test server
+# Testing stuff
 server/
+testr.js
 
 # Build files
 core/core
 core/core.exe
 core/build.sh
+build/
 
 # Node
 node_modules/
 build.sh
+
+# VS Code
+.vscode/

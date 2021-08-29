@@ -30,7 +30,10 @@ const reqless = require('./index');
 execFileSync('wget', ['http://info.cern.ch/']);
 
 const read_file = fs.readFileSync('./index.html' , {encoding : 'utf-8'});
-    const response = reqless.req("http://info.cern.ch/", "GET");
+    const response =  reqless({ 
+        url: "http://info.cern.ch/",
+        method: "GET"
+    })
 
 test("reqless test" , () => {
     expect(response.body.trim()).toBe(read_file.trim());
