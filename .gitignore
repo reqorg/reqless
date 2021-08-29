@@ -3,5 +3,9 @@ libcrypto-1_1.dll
 libssl-1_1.dll
 
 # Build files
+build/
 core
 core.exe
+
+# Node
+node_modules/
