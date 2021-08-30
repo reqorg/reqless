@@ -26,7 +26,7 @@ console.log(response.body, response.headers);
 The main reqless function returns a `response` object.
 A response object has the following attributes:
   - body: The body received from the HTTP request (string).
-  - headers: The headers received from the HTTP request (string).
+  - headers: The headers received from the HTTP request (object).
 
 ## Request
 Inside the request object you can provide the following attributes:
