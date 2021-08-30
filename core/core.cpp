@@ -213,15 +213,26 @@ sendRequest(std::string url, std::string method, std::string data)
     return responseObj;
 }
 
-int main() {
-    string url = "http://httpbin.org/post";
-    unordered_map<string, string> response = sendRequest(url, "POST", "hello=aaa");
+#include <chrono>
+#include <time.h>
 
-    unordered_map<string, string>::const_iterator body = response.find("body");
-    msg("RESPONSE BODY\n", "green");
-    cout << body->second << endl;
-    
-    unordered_map<string, string>::const_iterator headers = response.find("headers");
-    msg("RESPONSE HEADERS\n", "green");
-    cout << headers->second << endl;
+using std::cout; using std::endl;
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
+using std::chrono::seconds;
+using std::chrono::system_clock;
+
+int main() {
+    string url = "http://info.cern.ch/";
+    auto ms1 = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    sendRequest(url, "GET");
+    //msg("RESPONSE BODY\n", "green");
+    //cout << body->second << endl;
+    auto ms2 = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+
+    cout<<(ms2-ms1);
+
+    //unordered_map<string, string>::const_iterator headers = response.find("headers");
+    //msg("RESPONSE HEADERS\n", "green");
+    //cout << headers->second << endl;
 }
