@@ -4,4 +4,4 @@ const response = reqless({
     url: "https://example.com/",
     method: "GET"
 })
-console.log(response.headers)
+console.log(response.body)
