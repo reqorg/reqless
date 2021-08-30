@@ -18,3 +18,9 @@ build.sh
 
 # VS Code
 .vscode/
+
+# Github
+.github/
+
+# Tests
+index.test.js
