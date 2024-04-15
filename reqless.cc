@@ -1,46 +1,33 @@
-#include <napi.h>
+#include "core/core.cpp"
+#include "core/request.h"
 #include <cstring>
+#include <napi.h>
 #include <sstream>
-#include "./core/core.cpp"
-#include "./core/request.h"
 
 using namespace Napi;
 using namespace std;
 
-Object parseHeaders(Env env, const string headers) {
-  Object headersObj = Object::New(env);
-  
-  string result;
-  istringstream iss(headers);
-
-  const string delimiter = ": ";
-  for (string line; getline(iss, line); ) {
-      string key = line.substr(0, line.find(delimiter));
-      line.erase(0, line.find(delimiter) + delimiter.length());
-      string value = line.substr(0, line.find(delimiter));
-      value.erase(value.find("\r"), 1);
-      headersObj.Set(key, value);
-  }
-  return headersObj;
-}
-
-Object sendRequestMiddleman(const CallbackInfo& info) {
+Object sendRequestMiddleman(const CallbackInfo &info) {
+  // setup environment
   Env env = info.Env();
 
+  // reqless request --> obj
   Object request = info[0].As<Object>();
-  string method, domain, data;
+
+  string method = "GET", domain, data = "";
 
   // Attribute reading
   domain = request.Get("url").As<String>();
+
+  if (domain.back() != '/')
+    domain.append("/");
+
   if (request.Has("method")) {
     method = request.Get("method").As<String>();
-  } else {
-    method = "GET";
   }
+
   if (request.Has("data")) {
     data = request.Get("data").As<String>();
-  } else {
-    data = "";
   }
 
   unordered_map<string, string> response = sendRequest(domain, method, data);
@@ -48,19 +35,16 @@ Object sendRequestMiddleman(const CallbackInfo& info) {
   Object responseObj = Object::New(env);
 
   unordered_map<string, string>::const_iterator body = response.find("body");
-  unordered_map<string, string>::const_iterator headers = response.find("headers");
-  
-  string vd = body->second;
-
-  Object headersObj = parseHeaders(env, headers->second);
+  unordered_map<string, string>::const_iterator headers =
+      response.find("headers");
 
   responseObj.Set("body", body->second);
-  responseObj.Set("headers", headersObj);
+  responseObj.Set("headers", headers->second);
   return responseObj;
 }
 
 Object Init(Env env, Object exports) {
-    return Napi::Function::New(env, sendRequestMiddleman);
+  return Napi::Function::New(env, sendRequestMiddleman);
 }
 
 NODE_API_MODULE(reqless, Init)

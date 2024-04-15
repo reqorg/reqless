@@ -1,6 +1,6 @@
 {
   "name": "reqless",
-  "version": "1.0.6-beta",
+  "version": "1.0.7-alpha",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,8 @@
   "gypfile": true,
   "dependencies": {
     "bindings": "^1.5.0",
-    "node-addon-api": "^4.1.0"
+    "node-addon-api": "^4.1.0",
+    "segfault-handler": "^1.3.0"
   },
   "keywords": [
     "http",
